@@ -15,6 +15,11 @@ const ca2 = {
   ca: fs.readFileSync('../ssl/other_ca/chain/ca-chain.cert.pem'),
 };
 
+const checkServerIdentity = (host, cert) => {
+    console.log('server: ', host, ' presented certificate: ',cert);
+    return host === 'localhost' ?  undefined : 'Hostname was not localhost';
+};
+
 // Server knows who we are.
 const options1 = { 
   hostname: 'localhost', 
@@ -25,10 +30,7 @@ const options1 = {
   cert: ca1.cert,
   ca: ca1.ca,
   rejectUnauthorized: true,
-  checkServerIdentity: ((host, cert) => {
-    console.log('server: ', host, ' presented certificate: ',cert);
-    return host === 'localhost' ?  undefined : 'Hostname was not localhost';
-  })
+  checkServerIdentity: checkServerIdentity
 };
 
 // Server doesn't know who we are so it hangs up the socket.
@@ -41,10 +43,7 @@ const options2 = {
   cert: ca2.cert,
   ca: ca2.ca,
   rejectUnauthorized: true,
-  checkServerIdentity: ((host, cert) => {
-    console.log('server: ', host, ' presented certificate: ',cert);
-    return host === 'localhost' ?  undefined : 'Hostname was not localhost';
-  })
+  checkServerIdentity: checkServerIdentity
 };
 
 // Server knows who we are but we don't know who the server is.
@@ -59,13 +58,11 @@ const options3 = {
   cert: ca1.cert,
   ca: ca2.ca,
   rejectUnauthorized: true,
-  checkServerIdentity: ((host, cert) => {
-    console.log('server: ', host, ' presented certificate: ',cert);
-    return host === 'localhost' ?  undefined : 'Hostname was not localhost';
-  })
+  checkServerIdentity: checkServerIdentity
 };
 
-const lb = { 
+// This hits the nginx proxy
+const proxy = { 
   hostname: 'localhost', 
   port: 443, 
   path: '/hello', 
@@ -74,13 +71,10 @@ const lb = {
   cert: ca1.cert,
   ca: ca1.ca,
   rejectUnauthorized: true,
-  checkServerIdentity: ((host, cert) => {
-    console.log('server: ', host, ' presented certificate: ',cert);
-    return host === 'localhost' ?  undefined : 'Hostname was not localhost';
-  })
+  checkServerIdentity: checkServerIdentity
 };
 
-https.get(lb, (response) => {
+https.get(proxy, (response) => {
   response.on('data', (data) => {
     process.stdout.write(data);
   });

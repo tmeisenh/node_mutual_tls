@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  node:
+    build:
+      context: ./node_app
+      dockerfile: Dockerfile
+    container_name: node-services 
+    networks:
+      - n-tier
+    ports:
+        - "3000"
+
+  proxy:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    container_name: nginx-proxy
+    volumes:
+      - ./ssl:/ssl
+    networks:
+      - n-tier
+    ports:
+        - "443:443"
+        - "80:80"
+
+networks:
+  n-tier:
