@@ -19,7 +19,7 @@ const ca2 = {
 const options1 = { 
   hostname: 'localhost', 
   port: 4433, 
-  path: '/hello.txt', 
+  path: '/hello', 
   method: 'GET', 
   key: ca1.key,
   cert: ca1.cert,
@@ -35,7 +35,7 @@ const options1 = {
 const options2 = { 
   hostname: 'localhost', 
   port: 4433, 
-  path: '/hello.txt', 
+  path: '/hello', 
   method: 'GET', 
   key: ca2.key,
   cert: ca2.cert,
@@ -53,7 +53,7 @@ const options2 = {
 const options3 = { 
   hostname: 'localhost', 
   port: 4433, 
-  path: '/hello.txt', 
+  path: '/hello', 
   method: 'GET', 
   key: ca1.key,
   cert: ca1.cert,
@@ -65,7 +65,22 @@ const options3 = {
   })
 };
 
-https.get(options1, (response) => {
+const lb = { 
+  hostname: 'localhost', 
+  port: 443, 
+  path: '/hello', 
+  method: 'GET', 
+  key: ca1.key,
+  cert: ca1.cert,
+  ca: ca1.ca,
+  rejectUnauthorized: true,
+  checkServerIdentity: ((host, cert) => {
+    console.log('server: ', host, ' presented certificate: ',cert);
+    return host === 'localhost' ?  undefined : 'Hostname was not localhost';
+  })
+};
+
+https.get(lb, (response) => {
   response.on('data', (data) => {
     process.stdout.write(data);
   });
